@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.text.*?>
+
+<Pane fx:id="pane" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="670.0" prefWidth="540.0" xmlns="http://javafx.com/javafx/10.0.2-internal" xmlns:fx="http://javafx.com/fxml/1" fx:controller="sample.Controller">
+    <ProgressBar fx:id="progress" layoutX="14.0" layoutY="14.0" maxHeight="20.0" minHeight="20.0" prefHeight="20.0" prefWidth="500.0" progress="0.0" />
+    <Label fx:id="time" layoutX="33.0" layoutY="53.0" maxHeight="35.0" maxWidth="90.0" minHeight="35.0" minWidth="90.0" prefHeight="35.0" prefWidth="90.0" text="Время: ">
+        <font>
+            <Font fx:id="nowTime" name="System Bold" size="24.0" />
+        </font>
+    </Label>
+    <Label fx:id="txt" layoutX="123.0" layoutY="50.0" prefHeight="45.0" prefWidth="126.0" />
+</Pane>

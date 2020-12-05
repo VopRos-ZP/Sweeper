@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.text.*?>
+
+<Pane fx:id="Stage" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity"
+      prefHeight="300.0" prefWidth="500.0" xmlns="http://javafx.com/javafx/10.0.2-internal"
+      xmlns:fx="http://javafx.com/fxml/1" fx:controller="sample.HelloController">
+    <Label fx:id="lbl1" layoutX="124.0" layoutY="28.0" prefHeight="30.0" prefWidth="291.0"
+           text="Добро пожаловать, игрок!" textAlignment="JUSTIFY">
+        <font>
+            <Font name="System Bold" size="20.0"/>
+        </font>
+    </Label>
+    <Label fx:id="lbl2" layoutX="161.0" layoutY="73.0" prefHeight="30.0" prefWidth="217.0" text="Выбери размер поля!">
+        <font>
+            <Font name="System Bold" size="20.0"/>
+        </font>
+    </Label>
+    <Button fx:id="btn_size_15" layoutX="219.0" layoutY="128.0" mnemonicParsing="false" onAction="#onClick_15"
+            text="15X15" textAlignment="JUSTIFY">
+        <font>
+            <Font name="System Bold" size="14.0"/>
+        </font>
+    </Button>
+    <Button fx:id="btn_size_10" layoutX="93.0" layoutY="128.0" mnemonicParsing="false" onAction="#onClick_10"
+            text="10X10">
+        <font>
+            <Font name="System Bold" size="14.0"/>
+        </font>
+    </Button>
+</Pane>
