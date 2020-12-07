@@ -16,7 +16,7 @@ public class Cell {
     private static int size_width;
     private static int size_height;
     private String image;
-    private static Button btn = new Button("");
+    private Button btn;
 
     public Cell (Button button) {
         btn = button;
@@ -77,6 +77,10 @@ public class Cell {
 
     public Button button() {
         return btn;
+    }
+
+    public void setButton(Button btn) {
+        this.btn = btn;
     }
 
     /*** Types Cell ***/

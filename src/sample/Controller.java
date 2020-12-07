@@ -8,6 +8,7 @@ import javafx.scene.control.ProgressBar;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.MouseButton;
 import javafx.scene.input.MouseEvent;
+import javafx.scene.layout.Border;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.Pane;
 import javafx.scene.text.Font;
@@ -57,20 +58,26 @@ public class Controller {
 
     // инициализация кнопок
     private Button initButton(int i, int j) {
-        Cell cell = new Cell(new Button(""));
+        Button btn = new Button("");
+        btn.setId(i + "_" + j);
+        btn.setGraphic(new ImageView("img/closed.png"));
+        buttons[i][j] = btn;
+        initCell(btn);
+        return btn;
+    }
+
+    // инициализация клеток (Cells)
+    private void initCell(Button btn) {
+        Cell cell = new Cell(btn);
+        cell.setButton(btn);
         cell.setSize(50, 50);
         cell.setImage("closed");
         cell.setValue(Cell.UNDETECTED);
-        cell.setBtn_id(i + "_" + j);
-        cell.setCell_id(i + "_" + j);
+        cell.setCell_id(btn.getId());
         cell.setOnAction(this::onClick);
         cell.setOnMousePressed(this::onPressed);
-        buttons[i][j] = cell.button();
-        cells.put(cell.button(), cell);
-        return cell.button();
+        cells.put(btn, cell);
     }
-    
-    private void
 
     // инициализация бомб
     public void initBombs() {
@@ -145,14 +152,14 @@ public class Controller {
 
     // открытие клетки
     private void openCell(Cell cell) {
-        if (cell.value == Cell.BOMBED) gameOver(cell);
+        if (cell.value == Cell.BOMBED) gameOver();
         else openNumber(cell);
     }
 
     // открытие клетки с номером
     private void openNumber(Cell cell) {
-        if (getCountAroundButton(cell) == 0) openNullCells(cell);
-        else
+//        if (getCountAroundButton(cell) == 0) openNullCells(cell);
+//        else
             new Cell(parseCell(cell)).setImage("num" + getCountAroundButton(cell));
     }
 
@@ -182,21 +189,16 @@ public class Controller {
     }
 
     // конец игры
-    private void gameOver(Cell bomb) {
-        new Cell(parseCell(bomb)).setImage("bomb");
+    private void gameOver() {
+        bombs.forEach((Button btn, Cell cell) -> cell.setImage("bomb"));
     }
 
     /*** Actions ***/
     // нажатие на кнопку
     public void onClick(ActionEvent e) {
         Button btn = ((Button) e.getSource());
-        fhsdjf();
-        new Cell(parseCell(cells.get(btn))).disableCell();
+        cells.get(btn).disableCell();
         openCell(cells.get(btn));
-    }
-
-    private void fhsdjf() {
-        cells.forEach((Button btn, Cell cell) -> System.out.println("btn = " + btn + "\nCell button = " + cell.button()));
     }
 
     // нажатие мышки на кнопку
