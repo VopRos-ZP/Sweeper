@@ -8,10 +8,7 @@ import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
-import javafx.scene.layout.ColumnConstraints;
-import javafx.scene.layout.GridPane;
 import javafx.scene.layout.Pane;
-import javafx.scene.layout.RowConstraints;
 import javafx.stage.Stage;
 
 import java.io.IOException;
@@ -22,7 +19,6 @@ public class HelloController {
     public Button btn_size_15;
     public Label lbl1;
     public Label lbl2;
-    private final int CALLS = 50;
     public Pane Stage;
 
     private void openStage(int paneSize) {
@@ -30,11 +26,12 @@ public class HelloController {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("../Views/sample.fxml"));
             Parent root = loader.load();
             Controller controller = loader.getController();
-            controller.initStage(paneSize);
+            controller.initGame(paneSize);
             Stage stage = new Stage();
             stage.setTitle("Сапёр");
             stage.setResizable(false);
-            stage.setScene(new Scene(root, (paneSize * CALLS + 40), ((paneSize * CALLS + 40) + 130)));
+            int COLS = 50;
+            stage.setScene(new Scene(root, (paneSize * COLS + 40), ((paneSize * COLS + 40) + 130)));
             stage.show();
         } catch (IOException e) {
             e.printStackTrace();

@@ -11,33 +11,38 @@ import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.Pane;
 import javafx.scene.text.Font;
-import java.util.Random;
+import sample.game.*;
+
+import java.util.*;
 
 public class Controller {
 
     @FXML
     private int paneSize;
-    private final int COLS = 50;
     public Pane pane;
     public ProgressBar progress;
     public Label time;
     public Font nowTime;
     public Label txt;
     private Button[][] buttons;
-    private Button[] bombs;
+    private final Map<Button, Cell> bombs = new HashMap<>();
+    private final Map<Button, Cell> cells = new HashMap<>();
+    private final Map<Button, Cell> flags = new HashMap<>();
+    private final List<Cell> nulls = new ArrayList<>();
 
-    // инициализация окна и его размера
-    public void initStage(int size) {
+    /*** Initialisations ***/
+    // инициализация игры
+    public void initGame(int size) {
         this.paneSize = size;
         buttons = new Button[paneSize][paneSize];
-        paintGridPane();
+        initGridPane();
         initBombs();
+        initValues();
     }
 
-    // создание игрового поля
-    private void paintGridPane() {
+    // инициализация панели для кнопок
+    public void initGridPane() {
         GridPane gp = new GridPane();
-        gp.setGridLinesVisible(false);
         gp.setVisible(true);
         gp.setLayoutX(20);
         gp.setLayoutY(130);
@@ -52,46 +57,33 @@ public class Controller {
 
     // инициализация кнопок
     private Button initButton(int i, int j) {
-        Button btn = new Button();
-        btn.setText("");
-        btn.setId(i + "_" + j);
-        btn.setGraphic(new ImageView("img/closed.png"));
-        btn.setMinSize(COLS, COLS);
-        btn.setPrefSize(COLS, COLS);
-        btn.setMaxSize(COLS, COLS);
-        btn.setOnAction(this::onClick);
-        btn.setOnMousePressed(this::onMouseClick);
-        buttons[i][j] = btn;
-        return btn;
+        Cell cell = new Cell(new Button(""));
+        cell.setSize(50, 50);
+        cell.setImage("closed");
+        cell.setValue(Cell.UNDETECTED);
+        cell.setBtn_id(i + "_" + j);
+        cell.setCell_id(i + "_" + j);
+        cell.setOnAction(this::onClick);
+        cell.setOnMousePressed(this::onPressed);
+        buttons[i][j] = cell.button();
+        cells.put(cell.button(), cell);
+        return cell.button();
     }
+    
+    private void
 
     // инициализация бомб
-    private void initBombs() {
+    public void initBombs() {
         Random r = new Random();
-        bombs = new Button[countBomb()];
         for (int x = 0; x < countBomb(); x++) {
             int rx = r.nextInt(paneSize);
             int ry = r.nextInt(paneSize);
-            if (!checkCountBombs(rx, ry))
-                bombs[x] = buttons[rx][ry];
+            if (!checkRepeatBombs(rx, ry))
+                bombs.put(buttons[rx][ry], cells.get(buttons[rx][ry]));
             else x--;
         }
-        setValueBombs();
-    }
-
-    // установка "значения" бомбам для их определения
-    private void setValueBombs() {
-        for (Button btn : bombs)
-            btn.setId(btn.getId().split("_")[0] + "_" +
-                      btn.getId().split("_")[1] + "/bomb");
-    }
-
-    // проверка на повтор координат одной бомбы
-    private boolean checkCountBombs(int randX, int randY) {
-        for (Button bomb : bombs)
-            if (buttons[randX][randY].equals(bomb))
-                return true;
-        return false;
+        System.out.println();
+        System.out.println(buttons[0][0]);
     }
 
     // получение кол-ва бомб
@@ -102,82 +94,48 @@ public class Controller {
         return answer;
     }
 
-    // проверка "значений" для показа игроку
-    private void checkValue(Button btn) {
-        String value = btn.getId();
-        try {
-            value = value.split("/")[1];
-        } catch (IndexOutOfBoundsException index) {
-            soutNum(btn);
-        }
-        switch (value) {
-            case "bomb":
-                soutBombs();
-                break;
-            case "nobomb":
-                soutNum(btn);
-                break;
-        }
+    // проверка на повтор бомб
+    private boolean checkRepeatBombs(int randX, int randY) {
+        final boolean[] answer = {false};
+        bombs.forEach((Button bomb, Cell cell) -> {
+            if (buttons[randX][randY].equals(bomb))
+                answer[0] = true;
+        });
+        return answer[0];
     }
 
-    // показ бомб (если нажал на бомбу)
-    private void soutBombs() {
-        for (Button bomb : bombs) {
-            bomb.setGraphic(new ImageView("img/bomb.png"));
-            bomb.setDisable(true);
-            bomb.setStyle("-fx-background-color: #ffffff");
-            bomb.setOpacity(1);
-        }
-        for (Button[] btns : buttons)
-            for (Button btn : btns) {
-                btn.setDisable(true);
-                btn.setStyle("-fx-background-color: #ffffff");
-                btn.setOpacity(1);
-                checkValueGameOver(btn);
-            }
+    // установка "значений" кнопкам
+    private void initValues() {
+        for (int i = 0; i < paneSize; i++)
+            for (int j = 0; j < paneSize; j++)
+                if (checkBombInMap(buttons[i][j]))
+                    cells.get(buttons[i][j]).setValue(Cell.BOMBED);
+                else cells.get(buttons[i][j]).setValue(Cell.NUMBER);
     }
+    
+    /*** Backend game ***/
 
-    // проверка "значений" при проигрыше (показ неправильного определения флажков)
-    private void checkValueGameOver(Button btn) {
-        try {
-            String value = btn.getId().split("/")[1];
-            if (value.equals("nobomb"))
-                btn.setGraphic(new ImageView("img/nobomb.png"));
-        } catch (Exception ignore) {}
-    }
-
-    // показ ячеек с номерами
-    private void soutNum(Button btn) {
-        btn.setGraphic(new ImageView("img/num" + getCountAroundButton(btn) + ".png"));
+    // проверка на бомбу в карте для установки значений
+    private boolean checkBombInMap(Button btn) {
+        final boolean[] answer = {false};
+        bombs.forEach((Button bomb, Cell cell) -> {
+            if (btn.equals(bomb))
+                answer[0] = true;
+        });
+        return answer[0];
     }
 
     // определение кол-ва бомб вокруг нажатой клетки (инициализация цифры)
-    private int getCountAroundButton(Button btn) {
+    private int getCountAroundButton(Cell cell) {
         int count = 0;
-        int x = parseForInt(btn, 0);
-        int y = parseForInt(btn, 1);
+        int x = Integer.parseInt(cell.getCell_id().split("_")[0]);
+        int y = Integer.parseInt(cell.getCell_id().split("_")[1]);
         for (int i = -1; i < 2; i++)
             for (int j = -1; j < 2; j++)
                 if (checkInsertArray(x + i, y + j))
-                    try {
-                        String value = buttons[x + i][y + j].getId().split("/")[1];
-                        if (value.equals("bomb"))
-                            count++;
-                    } catch (IndexOutOfBoundsException ignore) {}
+                    if (cells.get(buttons[x + i][y + j]).getValue() == Cell.BOMBED)
+                        count++;
         return count;
-    }
-
-    // определение X и Y если ставил флаг (лучше не трогать!)
-    private int parseForInt(Button btn, int index) {
-        int id = 0;
-        try {
-            id = Integer.parseInt(btn.getId().split("_")[index]);
-        } catch (Exception ignore) {
-            try {
-                id = Integer.parseInt(btn.getId().split("_")[index].split("/")[0]);
-            } catch (Exception ignored) {}
-        }
-        return id;
     }
 
     // проверка на вхождение в gridPane
@@ -185,59 +143,67 @@ public class Controller {
         return (x >= 0 && x < paneSize) && (y >= 0 && y < paneSize);
     }
 
-    /*** game started ***/
-
-    // действие при нажатии
-    private void onClick(ActionEvent e) {
-        Button btn = (Button) e.getSource();
-        btn.setOnMouseClicked(this::onMouseClick);
-        checkValue(btn);
-        btn.setDisable(true);
-        btn.setStyle("-fx-background-color: #ffffff");
-        btn.setOpacity(1);
+    // открытие клетки
+    private void openCell(Cell cell) {
+        if (cell.value == Cell.BOMBED) gameOver(cell);
+        else openNumber(cell);
     }
 
-    // установка/удаление флажков
-    private void onMouseClick(MouseEvent e) {
-        Button btn = (Button) e.getSource();
-        if (e.getButton() == MouseButton.SECONDARY) // если нажата правая кнопка мыши
-            try {
-                String value = btn.getId().split("/")[1];
-                if (e.getButton() == MouseButton.SECONDARY && value.equals("flag"))
-                    removeFlag(btn);
-                else if (e.getButton() == MouseButton.SECONDARY)
-                    setFlag(btn);
-            } catch (Exception ignore){
-                setFlag(btn);
-            }
+    // открытие клетки с номером
+    private void openNumber(Cell cell) {
+        if (getCountAroundButton(cell) == 0) openNullCells(cell);
+        else
+            new Cell(parseCell(cell)).setImage("num" + getCountAroundButton(cell));
     }
 
-    // установка флажка
-    private void setFlag(Button bomb) {
-        try {
-            bomb.setId(bomb.getId().split("/")[0] + "/flag");
-        } catch (Exception ignore){
-            bomb.setId(bomb.getId() + "/flag");
+    private void openAround(Cell cell) {
+        Cell c = new Cell(parseCell(cell));
+        c.setImage("num" + getCountAroundButton(cell));
+        c.setCell_id(parseCell(cell).getId());
+        if (getCountAroundButton(c) == 0)
+            openNullCells(c);
+    }
+
+    private void openNullCells(Cell cell) {
+        int x = Integer.parseInt(cell.getCell_id().split("_")[0]);
+        int y = Integer.parseInt(cell.getCell_id().split("_")[1]);
+        if (getCountAroundButton(cell) == 0) {
+            for (int i = -1; i < 2; i++)
+                for (int j = -1; j < 2; j++)
+                    if (checkInsertArray(x + i, y + j))
+                        openAround(cells.get(buttons[x + i][y + j]));
         }
-        bomb.setGraphic(new ImageView("img/flaged.png"));
     }
 
-    // удаление флажка
-    private void removeFlag(Button btn) {
-        if (checkBomb(btn))
-            btn.setId(btn.getId().split("/")[0] + "/bomb");
-        else {
-            btn.setId(btn.getId().split("/")[0]);
-        }
-        btn.setGraphic(new ImageView("img/closed.png"));
+    private Button parseCell(Cell cell) {
+        int x = Integer.parseInt(cell.getCell_id().split("_")[0]);
+        int y = Integer.parseInt(cell.getCell_id().split("_")[1]);
+        return buttons[x][y];
     }
 
-    // проверка на бомбу
-    private boolean checkBomb(Button btn) {
-        for (Button bomb : bombs)
-            if (btn.equals(bomb))
-                    return true;
-        return false;
+    // конец игры
+    private void gameOver(Cell bomb) {
+        new Cell(parseCell(bomb)).setImage("bomb");
     }
 
+    /*** Actions ***/
+    // нажатие на кнопку
+    public void onClick(ActionEvent e) {
+        Button btn = ((Button) e.getSource());
+        fhsdjf();
+        new Cell(parseCell(cells.get(btn))).disableCell();
+        openCell(cells.get(btn));
+    }
+
+    private void fhsdjf() {
+        cells.forEach((Button btn, Cell cell) -> System.out.println("btn = " + btn + "\nCell button = " + cell.button()));
+    }
+
+    // нажатие мышки на кнопку
+    public void onPressed(MouseEvent e) {
+        Button btn = (Button) e.getSource();
+//        if (e.getButton() == MouseButton.SECONDARY) // если нажата правая кнопка мыши
+//            System.out.println("");
+    }
+    
 }
