@@ -13,7 +13,6 @@ public class Cell {
     private String value;
     private String type;
     private String cell_id;
-    private String btn_id;
     private Button btn;
 
     public Cell (Button button) {
@@ -43,15 +42,6 @@ public class Cell {
 
     public String getCell_id() {
         return cell_id;
-    }
-
-    public void setBtn_id(String id) {
-        this.btn_id = id;
-        btn.setId(id);
-    }
-
-    public String getBtn_id() {
-        return btn_id;
     }
 
     public void setSize(int width, int height) {
@@ -96,7 +86,6 @@ public class Cell {
     }
 
     /*** Types Cell ***/
-    public static String ZERO = "num0";
     public static String BOMBED = "bomb";
     public static String FLAGGED = "flagged";
     public static String NUMBER = "num";

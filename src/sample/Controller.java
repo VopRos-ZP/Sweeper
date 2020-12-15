@@ -8,7 +8,6 @@ import javafx.scene.input.MouseButton;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.Pane;
-import javafx.scene.text.Font;
 import sample.game.Cell;
 import java.util.*;
 
@@ -19,7 +18,7 @@ public class Controller {
     public Pane pane;
     public ProgressBar progress;
     public Label time;
-    public Label txt;
+    public Label txtTime;
     public GridPane gridPane;
     private Button[][] buttons;
     private final Map<Button, Cell> bombs = new HashMap<>();
@@ -33,6 +32,7 @@ public class Controller {
     private int hour = 0;
     private int minute = 0;
     private int second = 0;
+    private Timer timer;
     private final ContextMenu contextMenu = new ContextMenu(new MenuItem(curBomb +  "/" + countBombs));
 
     /*** Initialisations ***/
@@ -43,12 +43,13 @@ public class Controller {
         initGridPane();
         countBombs = countBomb();
         initBombs();
-        initValues();
+        initNumbers();
         initProgressBar();
+        initTime();
     }
 
     // инициализация панели для кнопок
-    public void initGridPane() {
+    private void initGridPane() {
         GridPane gp = new GridPane();
         gridPane = gp;
         gp.setVisible(true);
@@ -79,7 +80,7 @@ public class Controller {
         cell.setButton(btn);
         cell.setSize(50, 50);
         cell.setImage("closed");
-        cell.setValue(Cell.NUMBER);
+        cell.setType(Cell.NUMBER);
         cell.setCell_id(btn.getId());
         cell.setOnAction(this::onClick);
         cell.setOnMousePressed(this::onPressed);
@@ -87,15 +88,27 @@ public class Controller {
     }
 
     // инициализация бомб
-    public void initBombs() {
+    private void initBombs() {
         Random r = new Random();
         for (int x = 0; x < countBombs; x++) {
             int rx = r.nextInt(paneSize);
             int ry = r.nextInt(paneSize);
-            if (!checkRepeatBombs(rx, ry))
+            if (!checkRepeatBombs(rx, ry)) {
                 bombs.put(buttons[rx][ry], cells.get(buttons[rx][ry]));
+                cells.get(buttons[rx][ry]).setValue(Cell.BOMBED);
+                cells.get(buttons[rx][ry]).setType(Cell.BOMBED);
+            }
             else x--;
         }
+    }
+
+    // инициализация клеток с номерами
+    private void initNumbers() {
+        cells.forEach((Button btn, Cell cell) ->
+            bombs.forEach((Button b, Cell bomb) -> {
+				if (cell != bomb)
+					cell.setValue(Cell.NUMBER);
+			}));
     }
 
     // инициализация прогресс бара
@@ -107,7 +120,8 @@ public class Controller {
 
     // инициализация времени
     private void initTime() {
-        time.setText(minute + ":" + second + "");
+        time.setText(minute + " : " + second);
+        timer = new Timer();
     }
 
     // получение кол-ва бомб
@@ -127,32 +141,8 @@ public class Controller {
         });
         return answer[0];
     }
-
-    // установка "значений" кнопкам
-    private void initValues() {
-        for (int i = 0; i < paneSize; i++)
-            for (int j = 0; j < paneSize; j++)
-                if (checkBombInMap(buttons[i][j])) {
-                    cells.get(buttons[i][j]).setValue(Cell.BOMBED);
-                    cells.get(buttons[i][j]).setType("bomb");
-                }
-                else {
-                    cells.get(buttons[i][j]).setValue(Cell.NUMBER);
-                    cells.get(buttons[i][j]).setType("no_bomb");
-                }
-    }
     
     /*** Backend ***/
-    // проверка на бомбу в карте для установки значений
-    private boolean checkBombInMap(Button btn) {
-        final boolean[] answer = {false};
-        bombs.forEach((Button bomb, Cell cell) -> {
-            if (btn.equals(bomb))
-                answer[0] = true;
-        });
-        return answer[0];
-    }
-
     // определение кол-ва бомб вокруг нажатой клетки (инициализация цифры)
     private int getCountAroundButton(Cell cell) {
         int count = 0;
@@ -161,8 +151,8 @@ public class Controller {
         for (int i = -1; i < 2; i++)
             for (int j = -1; j < 2; j++)
                 if (checkInsertArray(x + i, y + j))
-                    if (cells.get(buttons[x + i][y + j]).getType().equals("bomb"))
-                        count++;
+						if (cells.get(buttons[x + i][y + j]).getType().equals(Cell.BOMBED))
+							count++;
         return count;
     }
 
@@ -173,9 +163,16 @@ public class Controller {
 
     // определение открытия клетки
     private void checkOpenCell() {
-
+    	if (currentCell.getType().equals(Cell.NUMBER))
+    		openCell(currentCell);
+    	else gameOver();
     }
 
+    private void openCell(Cell cell) {
+    	cell.setImage(cell.getValue() + getCountAroundButton(cell));
+    	cell.disableCell();
+	}
+    
     // инициализация x и y
     private void parseXAndY(Cell cell) {
         int x = Integer.parseInt(cell.getCell_id().split("_")[0]);
@@ -230,7 +227,7 @@ public class Controller {
 
     // конец игры
     private void gameOver() {
-        bombs.forEach((Button btn, Cell cell) -> cell.setImage("bomb"));
+        bombs.forEach((Button btn, Cell cell) -> cell.setImage(Cell.BOMBED));
         cells.forEach((Button btn, Cell cell) -> cell.disableCell());
     }
 
@@ -244,7 +241,7 @@ public class Controller {
 
     // нажатие мышки на кнопку //
     public void onPressed(MouseEvent e) {
-        currentCell = cells.get(e.getSource());
+        currentCell = cells.get((Button) e.getSource());
         if (e.getButton() == MouseButton.SECONDARY) // если нажата правая кнопка мыши
             if (!currentCell.getValue().equals(Cell.FLAGGED))
                 setFlag();
