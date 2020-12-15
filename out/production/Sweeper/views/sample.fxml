@@ -11,5 +11,9 @@
             <Font fx:id="nowTime" name="System Bold" size="24.0" />
         </font>
     </Label>
-    <Label fx:id="txt" layoutX="123.0" layoutY="50.0" prefHeight="45.0" prefWidth="126.0" />
+    <Label fx:id="txt" layoutX="123.0" layoutY="50.0" prefHeight="45.0" prefWidth="126.0" >
+        <font>
+            <Font fx:id="timer" name="System Bold" size="24.0" />
+        </font>
+    </Label>
 </Pane>

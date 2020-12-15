@@ -10,12 +10,10 @@ import javafx.scene.input.MouseEvent;
 public class Cell {
 
     @NotNull
-    public int value;
+    private String value;
+    private String type;
     private String cell_id;
     private String btn_id;
-    private static int size_width;
-    private static int size_height;
-    private String image;
     private Button btn;
 
     public Cell (Button button) {
@@ -23,12 +21,20 @@ public class Cell {
     }
 
     /*** Methods ***/
-    public void setValue(int value) {
+    public void setValue(String value) {
         this.value = value;
     }
 
-    public int getValue() {
+    public String getValue() {
         return value;
+    }
+
+    public void setType(String type) {
+        this.type = type;
+    }
+
+    public String getType() {
+        return type;
     }
 
     public void setCell_id(String id) {
@@ -52,12 +58,9 @@ public class Cell {
         btn.setMinSize(width, height);
         btn.setPrefSize(width, height);
         btn.setMaxSize(width, height);
-        this.size_width = width;
-        this.size_height = height;
     }
 
     public void setImage(String imageName) {
-        this.image = imageName;
         btn.setGraphic(new ImageView("img/" + imageName + ".png"));
     }
 
@@ -83,10 +86,18 @@ public class Cell {
         this.btn = btn;
     }
 
+    @Override
+    public boolean equals(Object o) {
+        if (o instanceof Cell) {
+            Cell c = (Cell) o;
+            return this.getCell_id().equals(c.getCell_id());
+        }
+        return super.equals(o);
+    }
+
     /*** Types Cell ***/
-    public static int UNDETECTED = 0;
-    public static int NO_BOMB = 1;
-    public static int BOMBED = 2;
-    public static int FLAGGED = 3;
-    public static int NUMBER = 4;
+    public static String ZERO = "num0";
+    public static String BOMBED = "bomb";
+    public static String FLAGGED = "flagged";
+    public static String NUMBER = "num";
 }
