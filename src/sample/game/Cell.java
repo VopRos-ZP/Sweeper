@@ -1,19 +1,19 @@
 package sample.game;
 
-import com.sun.istack.internal.NotNull;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
+import javafx.scene.Node;
 import javafx.scene.control.Button;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.MouseEvent;
 
 public class Cell {
 
-    @NotNull
     private String value;
     private String type;
     private String cell_id;
     private Button btn;
+    private boolean clicked = false;
 
     public Cell (Button button) {
         btn = button;
@@ -50,8 +50,24 @@ public class Cell {
         btn.setMaxSize(width, height);
     }
 
-    public void setImage(String imageName) {
-        btn.setGraphic(new ImageView("img/" + imageName + ".png"));
+    public void setClick() {
+    	this.clicked = true;
+	}
+ 
+	public boolean click() {
+    	return clicked;
+	}
+	
+    public void setImage(Node g) {
+        btn.setGraphic(g);
+    }
+
+    public Node image() {
+    	return btn.getGraphic();
+	}
+    
+    public void setImage(String name) {
+        btn.setGraphic(new ImageView("img/" + name + ".png"));
     }
 
     public void setOnAction(EventHandler<ActionEvent> action) {
