@@ -1,38 +1,42 @@
 package sample;
 
+import javafx.application.Platform;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
+import javafx.fxml.FXMLLoader;
 import javafx.scene.Node;
+import javafx.scene.Parent;
+import javafx.scene.Scene;
 import javafx.scene.control.*;
-import javafx.scene.image.ImageView;
 import javafx.scene.input.MouseButton;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.Pane;
-import javafx.scene.text.Font;
+import javafx.stage.Stage;
 import sample.game.Cell;
 import java.util.*;
 
 public class Controller {
-
-    @FXML
+	
     private int paneSize;
+    private Stage currentStage;
+    @FXML
     public Pane pane;
+    @FXML
     public ProgressBar progress;
+    @FXML
     public Label time;
-    public Label txt;
     public GridPane gridPane;
     private Button[][] buttons;
     private final Map<Button, Cell> bombs = new HashMap<>();
     private final Map<Button, Cell> cells = new HashMap<>();
     private final Map<Button, Cell> flags = new HashMap<>();
-    private final List<Cell> oldNull = new ArrayList<>();
+    private final Timer timer = new Timer();
     private int countBombs;
     private Cell currentCell;
-    private int curBomb = 0;
-    private int hour = 0;
     private int minute = 0;
     private int second = 0;
+    private boolean isFirst = true;
 
     /*** Initialisations ***/
     // инициализация игры
@@ -44,6 +48,7 @@ public class Controller {
         initBombs();
         initValues();
         initProgressBar();
+        initTime();
     }
 
     // инициализация панели для кнопок
@@ -104,12 +109,14 @@ public class Controller {
 
     // инициализация времени
     private void initTime() {
-        time.setText(minute + ":" + second + "");
+        if (minute == 0 && second == 0)
+            time.setText("00:00");
+        else time.setText(minute + ":" + second);
     }
 
     // получение кол-ва бомб
     private int countBomb() {
-        int answer = 9;
+        int answer = 18;
         if (paneSize == 15)
             answer = 40;
         return answer;
@@ -174,17 +181,15 @@ public class Controller {
 
     // определение открытия клетки
     private void checkOpenCell(Cell cell) {
-        if (cell.getValue().equals(Cell.BOMBED))
-            gameOver();
+        if (cell.getValue().equals(Cell.BOMBED)) endGame(false);
         else {
             if (getCountAroundButton(cell) == 0)
                 recNull(cell);
-            System.out.println(getCountAroundButton(cell));
             cell.setImage("num" + getCountAroundButton(cell));
         }
     }
 
-    //
+    // открытие пустых клеток
     private void recNull(Cell cell) {
     	cell.setClick();
         int x = Integer.parseInt(cell.getCell_id().split("_")[0]);
@@ -203,12 +208,37 @@ public class Controller {
 							recNull(cells.get(buttons[x + i][y + j]));
     }
 
+    // показ времени
+    private void time() {
+        timer.scheduleAtFixedRate(new TimerTask() {
+            @Override
+            public void run() {
+                second++;
+                if (second == 60) {
+                    second = 0;
+                    minute++;
+                }
+                Platform.runLater(() -> {
+                    if (minute < 10) {
+                        if (second < 10)
+                            time.setText("0" + minute + ":0" + second);
+                        else time.setText("0" + minute + ":" + second);
+                    }
+                    else {
+                        if (second < 10)
+                            time.setText(minute + ":0" + second);
+                        else time.setText(minute + ":" + second);
+                    }
+                });
+            }
+        }, new Date(), 1000);
+    }
+
     // удаление флага
     private void removeFlag() {
         currentCell.setValue(Cell.NUMBER);
         currentCell.setImage("closed");
         flags.remove(currentCell.button(), currentCell);
-        curBomb--;
         if (progress.getProgress() <= 0)
             progress.setProgress(0.0);
         else
@@ -220,11 +250,10 @@ public class Controller {
         currentCell.setValue(Cell.FLAGGED);
         currentCell.setImage("flagged");
         flags.put(currentCell.button(), currentCell);
-        curBomb++;
         progress.setProgress(progress.getProgress() + ((double) 1 / countBombs));
         if (progress.getProgress() >= 1)
             if (checkTypesForWin())
-                gameWin();
+                endGame(true);
     }
 
     // проверка на правильность расположения флагов
@@ -243,36 +272,67 @@ public class Controller {
         return answer;
     }
 
-    // поздравления победителя конец игры
-    private void gameWin() {
+    // определение победы или поражение + disable кнопок
+    private void endGame(boolean isWon) {
+        timer.cancel();
+        bombs.forEach((Button btn, Cell bomb) -> bomb.setImage("bomb"));
+        flags.forEach((Button b, Cell flag) -> {
+            if (flag.getType().equals("bomb")) flag.setImage("flagged");
+            else flag.setImage("nobomb");
+        });
         cells.forEach((Button btn, Cell cell) -> cell.disableCell());
+        if (isWon)
+            game("Победа!");
+        else game("Поражение!");
     }
 
-    // конец игры
-    private void gameOver() {
-		bombs.forEach((Button btn, Cell bomb) -> bomb.setImage("bomb"));
-		flags.forEach((Button b, Cell flag) -> {
-			if (flag.getType().equals("bomb")) flag.setImage("flagged");
-			else flag.setImage("nobomb");
-		});
-        cells.forEach((Button btn, Cell cell) -> cell.disableCell());
+    // поздравления победителя конец игры
+    private void game(String status) {
+        Alert alert = new Alert(Alert.AlertType.INFORMATION);
+        alert.setTitle("Конец игры");
+        alert.setHeaderText(status);
+        alert.setContentText("Ваше время игры: " + time.getText());
+        ButtonType newGame = new ButtonType("новая игра");
+        ButtonType exit = new ButtonType("выход");
+        alert.getButtonTypes().setAll(newGame, exit);
+        Optional<ButtonType> result = alert.showAndWait();
+        alert.show();
+        if (result.get() == newGame)
+            returnToWelcomWindow(alert);
+        else if (result.get() == exit)
+            System.exit(0);
+        currentStage.close();
+    }
+
+    // возвращение к главному экрану
+    private void returnToWelcomWindow(Alert alert) {
+        try {
+            Parent root = FXMLLoader.load(getClass().getResource("../Views/HelloWindow.fxml"));
+            Stage stage = new Stage();
+            stage.setScene(new Scene(root));
+            stage.setResizable(false);
+            stage.show();
+        } catch (Exception ignored) {}
+        alert.close();
     }
 
     /*** Actions ***/
     // нажатие на кнопку
     public void onClick(ActionEvent e) {
+        final Node source = (Node) e.getSource();
+        currentStage = (Stage) source.getScene().getWindow();
         currentCell = cells.get((Button) e.getSource());
         currentCell.setClick();
-        System.out.println(currentCell.button().getId());
+        if (isFirst) { isFirst = false; time(); } // проверка на первое нажатие
         if (!currentCell.getValue().equals(Cell.FLAGGED)) {
             currentCell.disableCell();
             checkOpenCell(currentCell);
         }
     }
 
-    // нажатие мышки на кнопку //
+    // нажатие мышки на кнопку
     public void onPressed(MouseEvent e) {
-        currentCell = cells.get(e.getSource());
+        currentCell = cells.get((Button) e.getSource());
         currentCell.setClick();
         if (e.getButton() == MouseButton.SECONDARY) // если нажата правая кнопка мыши
             if (!currentCell.getValue().equals(Cell.FLAGGED))

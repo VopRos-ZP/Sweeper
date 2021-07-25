@@ -1,15 +1,15 @@
 <?xml version="1.0" encoding="utf-8"?>
 <jnlp spec="1.0" xmlns:jfx="http://javafx.com" href="Sweeper.jnlp">
   <information>
-    <title>MineSweeper</title>
+    <title>sweeper</title>
     <vendor>Unknown</vendor>
     <description>Sweeper</description>
     <offline-allowed/>
   </information>
   <resources>
     <j2se version="1.6+" href="http://java.sun.com/products/autodl/j2se"/>
-    <jar href="Sweeper.jar" size="40801" download="eager" />
+    <jar href="Sweeper.jar" size="87710" download="eager" />
   </resources>
-  <jfx:javafx-desc  width="600" height="400" main-class="sample.Main"  name="Sweeper" />
+  <jfx:javafx-desc  width="440" height="250" main-class="sample.Main"  name="Sweeper" />
   <update check="background"/>
 </jnlp>

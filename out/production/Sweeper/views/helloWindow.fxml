@@ -1,33 +1,35 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<?import javafx.scene.control.*?>
-<?import javafx.scene.layout.*?>
-<?import javafx.scene.text.*?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.layout.Pane?>
+<?import javafx.scene.text.Font?>
 
-<Pane fx:id="Stage" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity"
-      prefHeight="300.0" prefWidth="500.0" xmlns="http://javafx.com/javafx/10.0.2-internal"
-      xmlns:fx="http://javafx.com/fxml/1" fx:controller="sample.HelloController">
-    <Label fx:id="lbl1" layoutX="124.0" layoutY="28.0" prefHeight="30.0" prefWidth="291.0"
-           text="Добро пожаловать, игрок!" textAlignment="JUSTIFY">
+<Pane fx:id="pane" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="250.0" prefWidth="440.0" xmlns="http://javafx.com/javafx/8.0.171" xmlns:fx="http://javafx.com/fxml/1" fx:controller="sample.HelloController">
+   <Button alignment="CENTER" contentDisplay="CENTER" disable="true" layoutX="-2.0" mnemonicParsing="false" prefHeight="250.0" prefWidth="444.0" style="-fx-background-color: fff; -fx-border-radius: 0; -fx-background-image: url(&quot;img/game_saper.jpg&quot;); -fx-opacity: 1;" textAlignment="JUSTIFY" textFill="WHITE" />
+    <Label fx:id="lbl1" alignment="CENTER" layoutX="-2.0" layoutY="14.0" prefHeight="46.0" prefWidth="444.0" text="ДОБРО ПОЖАЛОВАТЬ!" textAlignment="CENTER" textFill="RED">
         <font>
-            <Font name="System Bold" size="20.0"/>
+            <Font name="System Bold" size="31.0" />
         </font>
     </Label>
-    <Label fx:id="lbl2" layoutX="161.0" layoutY="73.0" prefHeight="30.0" prefWidth="217.0" text="Выбери размер поля!">
+    <Label fx:id="lbl2" alignment="CENTER" layoutY="77.0" prefHeight="35.0" prefWidth="440.0" text="выберите размер поля" textFill="RED">
         <font>
-            <Font name="System Bold" size="20.0"/>
+            <Font size="24.0" />
         </font>
     </Label>
-    <Button fx:id="btn_size_15" layoutX="219.0" layoutY="128.0" mnemonicParsing="false" onAction="#onClick_15"
-            text="15X15" textAlignment="JUSTIFY">
+    <Button fx:id="btn_size_15" layoutX="185.0" layoutY="141.0" mnemonicParsing="false" onAction="#onClick_15" prefHeight="60.0" prefWidth="70.0" style="-fx-background-color: red;" text="15X15" textAlignment="JUSTIFY" textFill="WHITE">
         <font>
-            <Font name="System Bold" size="14.0"/>
+            <Font name="System Bold" size="14.0" />
         </font>
     </Button>
-    <Button fx:id="btn_size_10" layoutX="93.0" layoutY="128.0" mnemonicParsing="false" onAction="#onClick_10"
-            text="10X10">
+    <Button fx:id="btn_size_10" layoutX="36.0" layoutY="141.0" mnemonicParsing="false" onAction="#onClick_10" prefHeight="60.0" prefWidth="70.0" style="-fx-background-color: green;" text="10X10" textFill="WHITE">
         <font>
-            <Font name="System Bold" size="14.0"/>
+            <Font name="System Bold" size="14.0" />
         </font>
     </Button>
+   <Button fx:id="exit" layoutX="356.0" layoutY="201.0" mnemonicParsing="false" onAction="#exit" prefHeight="35.0" prefWidth="70.0" style="-fx-background-color: black;" text="Выход" textFill="WHITE">
+      <font>
+         <Font name="System Bold" size="15.0" />
+      </font>
+   </Button>
 </Pane>
